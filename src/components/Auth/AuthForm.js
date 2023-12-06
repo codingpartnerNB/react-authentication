@@ -19,10 +19,13 @@ const AuthForm = () => {
     const enteredPassword = passwordInputRef.current.value;
 
     setIsLoading(true);
+    let url;
     if(isLogin){
-
+      url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBOQ5LofmYKI7SjErTWthnpqg4Jg6hTpoo";
     }else{
-      fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBOQ5LofmYKI7SjErTWthnpqg4Jg6hTpoo',
+      url = 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBOQ5LofmYKI7SjErTWthnpqg4Jg6hTpoo';
+    }
+    fetch(url,
       {
         method: "POST",
         body: JSON.stringify({
@@ -35,19 +38,22 @@ const AuthForm = () => {
         }
       }).then((res) => {
         setIsLoading(false);
-          if(res.ok){
-
-          }else{
-            return res.json().then((data) =>{
-              let errorMessage = "Authentication failed!";
-              if(data && data.error && data.error.message){
-                errorMessage = data.error.message;
-              }
-              alert(errorMessage);
-            });
-          }
-      });
-    }
+        if(res.ok){
+          return res.json();
+        }else{
+          return res.json().then((data) =>{
+            let errorMessage = "Authentication failed!";
+            // if(data && data.error && data.error.message){
+            //   errorMessage = data.error.message;
+            // }
+            throw new Error(errorMessage);
+          });
+        }
+    }).then(data=>{
+      console.log(data);
+    }).catch(err=>{
+      alert(err.message);
+    });
   }
 
   return (
@@ -68,14 +74,15 @@ const AuthForm = () => {
           />
         </div>
         <div className={classes.actions}>
-          {!isLoading && <button
+        {!isLoading && <button>{isLogin ? 'Login' : 'Create Account'}</button>}
+        {isLoading && <p>Sending request...</p>}
+          <button
             type='button'
             className={classes.toggle}
             onClick={switchAuthModeHandler}
           >
             {isLogin ? 'Create new account' : 'Login with existing account'}
-          </button>}
-          {isLoading && <p>Sending request...</p>}
+          </button>
         </div>
       </form>
     </section>
